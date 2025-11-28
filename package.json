@@ -1,0 +1,52 @@
+{
+  "name": "mcp-threatintel-server",
+  "version": "1.0.0",
+  "mcpName": "io.github.aplaceforallmystuff/mcp-threatintel",
+  "description": "MCP server for unified threat intelligence - AlienVault OTX, AbuseIPDB, GreyNoise, and abuse.ch feeds",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "bin": {
+    "mcp-threatintel": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "threat-intelligence",
+    "cybersecurity",
+    "alienvault",
+    "otx",
+    "abuseipdb",
+    "greynoise",
+    "urlhaus",
+    "malwarebazaar",
+    "threatfox",
+    "feodo",
+    "ioc",
+    "model-context-protocol",
+    "claude"
+  ],
+  "author": "Jim Christian",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aplaceforallmystuff/mcp-threatintel.git"
+  }
+}
