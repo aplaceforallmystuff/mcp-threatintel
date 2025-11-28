@@ -28,7 +28,8 @@ Add to your Claude Desktop or Claude Code MCP settings:
       "env": {
         "OTX_API_KEY": "your-otx-api-key",
         "ABUSEIPDB_API_KEY": "your-abuseipdb-api-key",
-        "GREYNOISE_API_KEY": "your-greynoise-api-key"
+        "GREYNOISE_API_KEY": "your-greynoise-api-key",
+        "ABUSECH_AUTH_KEY": "your-abusech-auth-key"
       }
     }
   }
@@ -49,6 +50,12 @@ Add to your Claude Desktop or Claude Code MCP settings:
 
 ## Tools
 
+### Status
+
+| Tool | Description |
+|------|-------------|
+| `threatintel_status` | Check which threat intelligence sources are configured |
+
 ### Unified Lookups
 
 | Tool | Description |
@@ -63,30 +70,28 @@ Add to your Claude Desktop or Claude Code MCP settings:
 | Tool | Description |
 |------|-------------|
 | `abuseipdb_check` | Check IP reputation and abuse history |
-| `abuseipdb_reports` | Get detailed abuse reports for an IP |
 
 ### AlienVault OTX (requires API key)
 
 | Tool | Description |
 |------|-------------|
-| `otx_indicator` | Get OTX indicator details |
-| `otx_pulses` | Search OTX pulses |
+| `otx_get_pulses` | Get recent threat intelligence pulses |
+| `otx_search_pulses` | Search pulses by keyword |
 
 ### GreyNoise (requires API key)
 
 | Tool | Description |
 |------|-------------|
 | `greynoise_ip` | Check if IP is internet noise or targeted threat |
-| `greynoise_quick` | Quick noise check for IP |
 
-### URLhaus (no key required)
+### URLhaus (requires abuse.ch auth key)
 
 | Tool | Description |
 |------|-------------|
 | `urlhaus_lookup` | Look up URL, domain, or IP in URLhaus |
 | `urlhaus_recent` | Get recent malware URLs |
 
-### MalwareBazaar (no key required)
+### MalwareBazaar (requires abuse.ch auth key)
 
 | Tool | Description |
 |------|-------------|
@@ -94,7 +99,7 @@ Add to your Claude Desktop or Claude Code MCP settings:
 | `malwarebazaar_recent` | Get recent malware samples |
 | `malwarebazaar_tag` | Search samples by tag |
 
-### ThreatFox (no key required)
+### ThreatFox (requires abuse.ch auth key)
 
 | Tool | Description |
 |------|-------------|
@@ -105,26 +110,31 @@ Add to your Claude Desktop or Claude Code MCP settings:
 
 | Tool | Description |
 |------|-------------|
-| `feodo_tracker` | Get Feodo/Emotet/Dridex botnet C2 servers |
+| `feodo_tracker` | Get active botnet C2 servers (QakBot, Emotet, Dridex, etc.) |
 
 ## Usage Examples
 
-### Check a suspicious IP
+### Check configured services
+```
+Use threatintel_status to see which services are available
+```
+
+### Get active botnet C2 servers (works without any API keys)
+```
+Use feodo_tracker to get current botnet command & control servers
+```
+
+### Check a suspicious IP (requires API keys for full results)
 ```
 Use threatintel_lookup_ip to check 185.220.101.1
 ```
 
-### Look up a malware hash
+### Look up a malware hash (requires abuse.ch auth key)
 ```
 Use malwarebazaar_hash to look up 44d88612fea8a8f36de82e1278abb02f
 ```
 
-### Get recent malware URLs
-```
-Use urlhaus_recent to get the latest 25 malware distribution URLs
-```
-
-### Search for Emotet IOCs
+### Search for Emotet IOCs (requires abuse.ch auth key)
 ```
 Use threatfox_search to find IOCs tagged "emotet"
 ```
