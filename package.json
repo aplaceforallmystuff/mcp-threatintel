@@ -1,6 +1,6 @@
 {
   "name": "mcp-threatintel-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "mcpName": "io.github.aplaceforallmystuff/mcp-threatintel",
   "description": "MCP server for unified threat intelligence - AlienVault OTX, AbuseIPDB, GreyNoise, and abuse.ch feeds",
   "main": "dist/index.js",
