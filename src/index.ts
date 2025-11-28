@@ -51,7 +51,8 @@ const services = {
   otx: !!config.otx.apiKey,
   abuseipdb: !!config.abuseipdb.apiKey,
   greynoise: !!config.greynoise.apiKey,
-  abusech: true, // abuse.ch works without auth for most queries
+  abusech: !!config.abusech.authKey,  // abuse.ch now requires auth
+  feodo: true, // Feodo Tracker public JSON feeds still work
 };
 
 const configuredServices = Object.entries(services)
@@ -230,120 +231,124 @@ if (services.greynoise) {
   });
 }
 
-// abuse.ch tools (work without auth)
-TOOLS.push(
-  {
-    name: "urlhaus_lookup",
-    description: "Check if a URL or domain is distributing malware (URLhaus)",
-    inputSchema: {
-      type: "object" as const,
-      properties: {
-        url: {
-          type: "string",
-          description: "URL or domain to check",
+// abuse.ch tools (require auth key)
+if (services.abusech) {
+  TOOLS.push(
+    {
+      name: "urlhaus_lookup",
+      description: "Check if a URL or domain is distributing malware (URLhaus)",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          url: {
+            type: "string",
+            description: "URL or domain to check",
+          },
         },
+        required: ["url"],
       },
-      required: ["url"],
     },
-  },
-  {
-    name: "urlhaus_recent",
-    description: "Get recent malware URLs from URLhaus",
-    inputSchema: {
-      type: "object" as const,
-      properties: {
-        limit: {
-          type: "number",
-          description: "Number of URLs to retrieve (default: 25)",
+    {
+      name: "urlhaus_recent",
+      description: "Get recent malware URLs from URLhaus",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          limit: {
+            type: "number",
+            description: "Number of URLs to retrieve (default: 25)",
+          },
         },
+        required: [],
       },
-      required: [],
     },
-  },
-  {
-    name: "malwarebazaar_hash",
-    description: "Look up malware sample by hash on MalwareBazaar",
-    inputSchema: {
-      type: "object" as const,
-      properties: {
-        hash: {
-          type: "string",
-          description: "MD5, SHA1, or SHA256 hash",
+    {
+      name: "malwarebazaar_hash",
+      description: "Look up malware sample by hash on MalwareBazaar",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          hash: {
+            type: "string",
+            description: "MD5, SHA1, or SHA256 hash",
+          },
         },
+        required: ["hash"],
       },
-      required: ["hash"],
     },
-  },
-  {
-    name: "malwarebazaar_recent",
-    description: "Get recent malware samples from MalwareBazaar",
-    inputSchema: {
-      type: "object" as const,
-      properties: {
-        limit: {
-          type: "number",
-          description: "Number of samples (default: 25, max: 1000)",
+    {
+      name: "malwarebazaar_recent",
+      description: "Get recent malware samples from MalwareBazaar",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          limit: {
+            type: "number",
+            description: "Number of samples (default: 25, max: 1000)",
+          },
         },
+        required: [],
       },
-      required: [],
     },
-  },
-  {
-    name: "malwarebazaar_tag",
-    description: "Get malware samples by tag (e.g., 'emotet', 'cobalt-strike', 'ransomware')",
-    inputSchema: {
-      type: "object" as const,
-      properties: {
-        tag: {
-          type: "string",
-          description: "Malware tag to search for",
+    {
+      name: "malwarebazaar_tag",
+      description: "Get malware samples by tag (e.g., 'emotet', 'cobalt-strike', 'ransomware')",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          tag: {
+            type: "string",
+            description: "Malware tag to search for",
+          },
+          limit: {
+            type: "number",
+            description: "Number of samples (default: 25)",
+          },
         },
-        limit: {
-          type: "number",
-          description: "Number of samples (default: 25)",
-        },
+        required: ["tag"],
       },
-      required: ["tag"],
     },
-  },
-  {
-    name: "threatfox_iocs",
-    description: "Get recent IOCs from ThreatFox (C2 servers, malware infrastructure)",
-    inputSchema: {
-      type: "object" as const,
-      properties: {
-        days: {
-          type: "number",
-          description: "Get IOCs from last N days (default: 7)",
+    {
+      name: "threatfox_iocs",
+      description: "Get recent IOCs from ThreatFox (C2 servers, malware infrastructure)",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          days: {
+            type: "number",
+            description: "Get IOCs from last N days (default: 7)",
+          },
         },
+        required: [],
       },
-      required: [],
     },
-  },
-  {
-    name: "threatfox_search",
-    description: "Search ThreatFox for IOCs by malware family or tag",
-    inputSchema: {
-      type: "object" as const,
-      properties: {
-        search_term: {
-          type: "string",
-          description: "Malware family or tag (e.g., 'Emotet', 'CobaltStrike')",
+    {
+      name: "threatfox_search",
+      description: "Search ThreatFox for IOCs by malware family or tag",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          search_term: {
+            type: "string",
+            description: "Malware family or tag (e.g., 'Emotet', 'CobaltStrike')",
+          },
         },
+        required: ["search_term"],
       },
-      required: ["search_term"],
-    },
+    }
+  );
+}
+
+// Feodo Tracker (public JSON feed - no auth required)
+TOOLS.push({
+  name: "feodo_tracker",
+  description: "Get active botnet C2 servers from Feodo Tracker (Emotet, Dridex, QakBot, etc.)",
+  inputSchema: {
+    type: "object" as const,
+    properties: {},
+    required: [],
   },
-  {
-    name: "feodo_tracker",
-    description: "Get active botnet C2 servers from Feodo Tracker",
-    inputSchema: {
-      type: "object" as const,
-      properties: {},
-      required: [],
-    },
-  }
-);
+});
 
 // Create server instance
 const server = new Server(
@@ -378,7 +383,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 otx: services.otx ? "configured" : "not configured (set OTX_API_KEY)",
                 abuseipdb: services.abuseipdb ? "configured" : "not configured (set ABUSEIPDB_API_KEY)",
                 greynoise: services.greynoise ? "configured" : "not configured (set GREYNOISE_API_KEY)",
-                abusech: "available (no auth required for most queries)",
+                abusech: services.abusech ? "configured" : "not configured (set ABUSECH_AUTH_KEY)",
+                feodo: "available (public JSON feeds)",
               },
               available_tools: TOOLS.map(t => t.name),
             }, null, 2),
@@ -612,6 +618,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       // URLhaus lookup
       case "urlhaus_lookup": {
+        if (!services.abusech) throw new Error("abuse.ch not configured (set ABUSECH_AUTH_KEY)");
         const { url } = args as { url: string };
 
         // Try as URL first, then as host
@@ -621,7 +628,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             config.abusech.urlhaus + "/url/",
             {
               method: "POST",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Auth-Key": config.abusech.authKey!,
+              },
               body: `url=${encodeURIComponent(url)}`,
             }
           );
@@ -630,7 +640,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             config.abusech.urlhaus + "/host/",
             {
               method: "POST",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Auth-Key": config.abusech.authKey!,
+              },
               body: `host=${encodeURIComponent(url)}`,
             }
           );
@@ -643,11 +656,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       // URLhaus recent
       case "urlhaus_recent": {
+        if (!services.abusech) throw new Error("abuse.ch not configured (set ABUSECH_AUTH_KEY)");
         const { limit = 25 } = args as { limit?: number };
 
         const result = await apiRequest<unknown>(
           config.abusech.urlhaus + "/urls/recent/limit/" + limit + "/",
-          { method: "GET" }
+          {
+            method: "GET",
+            headers: { "Auth-Key": config.abusech.authKey! },
+          }
         );
 
         return {
@@ -657,13 +674,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       // MalwareBazaar hash lookup
       case "malwarebazaar_hash": {
+        if (!services.abusech) throw new Error("abuse.ch not configured (set ABUSECH_AUTH_KEY)");
         const { hash } = args as { hash: string };
 
         const result = await apiRequest<unknown>(
           config.abusech.malwarebazaar,
           {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              "Auth-Key": config.abusech.authKey!,
+            },
             body: `query=get_info&hash=${encodeURIComponent(hash)}`,
           }
         );
@@ -675,13 +696,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       // MalwareBazaar recent
       case "malwarebazaar_recent": {
+        if (!services.abusech) throw new Error("abuse.ch not configured (set ABUSECH_AUTH_KEY)");
         const { limit = 25 } = args as { limit?: number };
 
         const result = await apiRequest<unknown>(
           config.abusech.malwarebazaar,
           {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              "Auth-Key": config.abusech.authKey!,
+            },
             body: `query=get_recent&selector=${limit}`,
           }
         );
@@ -693,13 +718,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       // MalwareBazaar by tag
       case "malwarebazaar_tag": {
+        if (!services.abusech) throw new Error("abuse.ch not configured (set ABUSECH_AUTH_KEY)");
         const { tag, limit = 25 } = args as { tag: string; limit?: number };
 
         const result = await apiRequest<unknown>(
           config.abusech.malwarebazaar,
           {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              "Auth-Key": config.abusech.authKey!,
+            },
             body: `query=get_taginfo&tag=${encodeURIComponent(tag)}&limit=${limit}`,
           }
         );
@@ -711,13 +740,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       // ThreatFox IOCs
       case "threatfox_iocs": {
+        if (!services.abusech) throw new Error("abuse.ch not configured (set ABUSECH_AUTH_KEY)");
         const { days = 7 } = args as { days?: number };
 
         const result = await apiRequest<unknown>(
           config.abusech.threatfox,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "Auth-Key": config.abusech.authKey!,
+            },
             body: JSON.stringify({ query: "get_iocs", days }),
           }
         );
@@ -729,13 +762,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       // ThreatFox search
       case "threatfox_search": {
+        if (!services.abusech) throw new Error("abuse.ch not configured (set ABUSECH_AUTH_KEY)");
         const { search_term } = args as { search_term: string };
 
         const result = await apiRequest<unknown>(
           config.abusech.threatfox,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "Auth-Key": config.abusech.authKey!,
+            },
             body: JSON.stringify({ query: "search_ioc", search_term }),
           }
         );

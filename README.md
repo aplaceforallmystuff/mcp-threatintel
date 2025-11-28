@@ -42,9 +42,10 @@ Add to your Claude Desktop or Claude Code MCP settings:
 | AlienVault OTX | Optional | Yes (unlimited) | [otx.alienvault.com](https://otx.alienvault.com) |
 | AbuseIPDB | Optional | Yes (1,000/day) | [abuseipdb.com](https://www.abuseipdb.com) |
 | GreyNoise | Optional | Yes (limited) | [greynoise.io](https://www.greynoise.io) |
-| abuse.ch | No | Yes | No key needed |
+| abuse.ch | Optional | Yes | [auth.abuse.ch](https://auth.abuse.ch) |
+| Feodo Tracker | No | Yes | Public JSON feeds |
 
-**Note:** abuse.ch tools (URLhaus, MalwareBazaar, ThreatFox, Feodo Tracker) work without any API key. Other tools are dynamically enabled based on which API keys you provide.
+**Note:** Most tools are dynamically enabled based on which API keys you provide. Feodo Tracker works without authentication (public JSON feeds). As of late 2024, abuse.ch APIs (URLhaus, MalwareBazaar, ThreatFox) require authentication.
 
 ## Tools
 
