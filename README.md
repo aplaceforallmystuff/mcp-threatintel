@@ -1,5 +1,9 @@
 # mcp-threatintel
 
+[![npm version](https://img.shields.io/npm/v/mcp-threatintel-server.svg)](https://www.npmjs.com/package/mcp-threatintel-server)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/node/v/mcp-threatintel-server.svg)](https://nodejs.org)
+
 MCP server providing unified access to multiple threat intelligence sources for security research and analysis.
 
 ## Features
