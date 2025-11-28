@@ -1,0 +1,50 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "io.github.aplaceforallmystuff/mcp-threatintel",
+  "description": "Unified threat intel - OTX, AbuseIPDB, GreyNoise, abuse.ch, Feodo Tracker",
+  "repository": {
+    "url": "https://github.com/aplaceforallmystuff/mcp-threatintel",
+    "source": "github"
+  },
+  "version": "1.0.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "mcp-threatintel-server",
+      "version": "1.0.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "description": "AlienVault OTX API key (free at otx.alienvault.com)",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true,
+          "name": "OTX_API_KEY"
+        },
+        {
+          "description": "AbuseIPDB API key (free at abuseipdb.com)",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true,
+          "name": "ABUSEIPDB_API_KEY"
+        },
+        {
+          "description": "GreyNoise API key (free at greynoise.io)",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true,
+          "name": "GREYNOISE_API_KEY"
+        },
+        {
+          "description": "abuse.ch Auth Key for URLhaus, MalwareBazaar, ThreatFox (free at auth.abuse.ch)",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true,
+          "name": "ABUSECH_AUTH_KEY"
+        }
+      ]
+    }
+  ]
+}
