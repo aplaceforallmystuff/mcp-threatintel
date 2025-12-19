@@ -4,3 +4,7 @@ dist/
 .DS_Store
 .env
 .mcpregistry_*
+
+# Claude Code local files
+.claude/
+CLAUDE.md
