@@ -6,12 +6,12 @@
     "url": "https://github.com/aplaceforallmystuff/mcp-threatintel",
     "source": "github"
   },
-  "version": "1.0.1",
+  "version": "1.0.3",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "mcp-threatintel-server",
-      "version": "1.0.1",
+      "version": "1.0.3",
       "transport": {
         "type": "stdio"
       },
@@ -31,7 +31,7 @@
           "name": "ABUSEIPDB_API_KEY"
         },
         {
-          "description": "GreyNoise API key (free at greynoise.io)",
+          "description": "GreyNoise API key - optional (community endpoint works without auth; key gives higher rate limits)",
           "isRequired": false,
           "format": "string",
           "isSecret": true,

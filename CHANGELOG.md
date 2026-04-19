@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-04-19
+
+### Fixed
+- **MalwareBazaar + ThreatFox silently returned empty responses.** The API base URLs `https://mb-api.abuse.ch/api/v1` and `https://threatfox-api.abuse.ch/api/v1` 301-redirect when hit without a trailing slash, and `fetch`/`curl` drop the POST body on redirect. Every MalwareBazaar and ThreatFox call was affected. Fixed by adding the trailing slash to the base URL constants.
+
+### Changed
+- **GreyNoise now works without an API key.** The community endpoint (`/v3/community/{ip}`) is accessible without auth; the key, when set, is still sent as a header for higher rate limits. Previously the tool was disabled entirely when `GREYNOISE_API_KEY` was unset.
+- Updated environment variable documentation to reflect `GREYNOISE_API_KEY` being optional and `ABUSECH_AUTH_KEY` being required for URLhaus/MalwareBazaar/ThreatFox.
+
 ## [1.0.2] - 2025-12-20
 
 ### Changed

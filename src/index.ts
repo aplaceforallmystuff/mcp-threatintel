@@ -11,8 +11,10 @@
  * Environment variables:
  * - OTX_API_KEY: AlienVault OTX API key (free at otx.alienvault.com)
  * - ABUSEIPDB_API_KEY: AbuseIPDB API key (free at abuseipdb.com)
- * - GREYNOISE_API_KEY: GreyNoise API key (free community tier)
- * - ABUSECH_AUTH_KEY: abuse.ch auth key (free at auth.abuse.ch) - optional
+ * - GREYNOISE_API_KEY: GreyNoise API key - optional (community endpoint works
+ *   without auth; key gives higher rate limits)
+ * - ABUSECH_AUTH_KEY: abuse.ch auth key (free at auth.abuse.ch) - required for
+ *   URLhaus, MalwareBazaar, ThreatFox lookups
  */
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
@@ -39,18 +41,26 @@ const config = {
   },
   abusech: {
     authKey: process.env.ABUSECH_AUTH_KEY,
+    // NOTE: abuse.ch API paths MUST end with a trailing slash. Hitting
+    // `/api/v1` (no slash) returns a 301 redirect, and fetch/curl drop the
+    // POST body on the redirect — every MalwareBazaar and ThreatFox call
+    // silently returns an empty response without this.
     urlhaus: "https://urlhaus-api.abuse.ch/v1",
-    malwarebazaar: "https://mb-api.abuse.ch/api/v1",
-    threatfox: "https://threatfox-api.abuse.ch/api/v1",
+    malwarebazaar: "https://mb-api.abuse.ch/api/v1/",
+    threatfox: "https://threatfox-api.abuse.ch/api/v1/",
     feodo: "https://feodotracker.abuse.ch/downloads",
   },
 };
 
-// Track which services are configured
+// Track which services are configured.
+// GreyNoise exposes a keyless "community" endpoint at /v3/community/{ip}
+// that works without auth (rate-limited per-IP, but sufficient for most
+// investigations). We treat greynoise as always available; the key, when
+// set, is added to the request header for higher rate limits.
 const services = {
   otx: !!config.otx.apiKey,
   abuseipdb: !!config.abuseipdb.apiKey,
-  greynoise: !!config.greynoise.apiKey,
+  greynoise: true,
   abusech: !!config.abusech.authKey,  // abuse.ch now requires auth
   feodo: true, // Feodo Tracker public JSON feeds still work
 };
@@ -382,7 +392,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               configured_services: {
                 otx: services.otx ? "configured" : "not configured (set OTX_API_KEY)",
                 abuseipdb: services.abuseipdb ? "configured" : "not configured (set ABUSEIPDB_API_KEY)",
-                greynoise: services.greynoise ? "configured" : "not configured (set GREYNOISE_API_KEY)",
+                greynoise: config.greynoise.apiKey
+                  ? "configured with API key"
+                  : "available (keyless community endpoint; set GREYNOISE_API_KEY for higher rate limits)",
                 abusech: services.abusech ? "configured" : "not configured (set ABUSECH_AUTH_KEY)",
                 feodo: "available (public JSON feeds)",
               },
@@ -428,7 +440,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           try {
             const gnResult = await apiRequest<unknown>(
               `${config.greynoise.baseUrl}/community/${ip}`,
-              { headers: { key: config.greynoise.apiKey! } }
+              config.greynoise.apiKey
+                ? { headers: { key: config.greynoise.apiKey } }
+                : {}
             );
             results.greynoise = gnResult;
           } catch (e) {
@@ -601,14 +615,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      // GreyNoise IP
+      // GreyNoise IP — works without key via community endpoint
       case "greynoise_ip": {
-        if (!services.greynoise) throw new Error("GreyNoise not configured");
         const { ip } = args as { ip: string };
 
         const result = await apiRequest<unknown>(
           `${config.greynoise.baseUrl}/community/${ip}`,
-          { headers: { key: config.greynoise.apiKey! } }
+          config.greynoise.apiKey
+            ? { headers: { key: config.greynoise.apiKey } }
+            : {}
         );
 
         return {
