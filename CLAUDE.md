@@ -47,3 +47,7 @@ npm run watch       # tsc --watch
 - Unified lookups query all configured sources, catch per-source errors, return partial results
 - `apiRequest<T>()` generic helper for all external API calls
 - No keys required to start (warns but continues with available sources)
+
+## Pre-Publish
+
+Run `/publish-mcp` before any `npm publish` — mandatory pipeline that handles tests, secret scan, sanitize, docs check, version bump, tag, push, and publish in strict order. Do not run `npm publish` directly.
