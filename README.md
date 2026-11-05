@@ -29,7 +29,7 @@ If you're doing security research, incident response, or threat analysis, this M
 
 ## Prerequisites
 
-- Node.js 18+
+- Node.js 20+
 - API keys for your preferred threat intelligence sources (see below)
 
 ## Installation
@@ -190,14 +190,14 @@ Add to `~/.claude.json`:
 | Tool | Description |
 |------|-------------|
 | `malwarebazaar_hash` | Look up malware sample by hash |
-| `malwarebazaar_recent` | Get recent malware samples |
+| `malwarebazaar_recent` | Get up to 100 recent malware samples |
 | `malwarebazaar_tag` | Search samples by tag |
 
 ### ThreatFox (requires abuse.ch auth key)
 | Tool | Description |
 |------|-------------|
 | `threatfox_iocs` | Get recent IOCs from ThreatFox |
-| `threatfox_search` | Search ThreatFox IOCs |
+| `threatfox_search` | Search ThreatFox for a domain, IP:port, or URL IOC value |
 
 ### Feodo Tracker (no key required)
 | Tool | Description |

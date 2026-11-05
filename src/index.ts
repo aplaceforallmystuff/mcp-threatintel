@@ -19,6 +19,8 @@
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { realpathSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -294,7 +296,7 @@ if (services.abusech) {
         properties: {
           limit: {
             type: "number",
-            description: "Number of samples (default: 25, max: 1000)",
+            description: "Number of samples (default: 25, max: 100)",
           },
         },
         required: [],
@@ -334,13 +336,13 @@ if (services.abusech) {
     },
     {
       name: "threatfox_search",
-      description: "Search ThreatFox for IOCs by malware family or tag",
+      description: "Search ThreatFox for an IOC value (domain, IP:port, or URL)",
       inputSchema: {
         type: "object" as const,
         properties: {
           search_term: {
             type: "string",
-            description: "Malware family or tag (e.g., 'Emotet', 'CobaltStrike')",
+            description: "IOC value (for example, 'example.com', '192.0.2.1:443', or a URL)",
           },
         },
         required: ["search_term"],
@@ -361,7 +363,7 @@ TOOLS.push({
 });
 
 // Create server instance
-const server = new Server(
+export const server = new Server(
   {
     name: "mcp-threatintel",
     version: "1.0.0",
@@ -479,7 +481,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             config.abusech.urlhaus + "/host/",
             {
               method: "POST",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                ...(config.abusech.authKey ? { "Auth-Key": config.abusech.authKey } : {}),
+              },
               body: `host=${encodeURIComponent(domain)}`,
             }
           );
@@ -501,9 +506,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         // OTX
         if (services.otx) {
           try {
-            const hashType = hash.length === 32 ? "MD5" : hash.length === 40 ? "SHA1" : "SHA256";
             const otxResult = await apiRequest<unknown>(
-              `${config.otx.baseUrl}/indicators/file/${hashType}/${hash}/general`,
+              `${config.otx.baseUrl}/indicators/file/${hash}/general`,
               { headers: { "X-OTX-API-KEY": config.otx.apiKey! } }
             );
             results.otx = otxResult;
@@ -518,7 +522,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             config.abusech.malwarebazaar,
             {
               method: "POST",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                ...(config.abusech.authKey ? { "Auth-Key": config.abusech.authKey } : {}),
+              },
               body: `query=get_info&hash=${encodeURIComponent(hash)}`,
             }
           );
@@ -556,7 +563,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             config.abusech.urlhaus + "/url/",
             {
               method: "POST",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                ...(config.abusech.authKey ? { "Auth-Key": config.abusech.authKey } : {}),
+              },
               body: `url=${encodeURIComponent(url)}`,
             }
           );
@@ -714,7 +724,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!services.abusech) throw new Error("abuse.ch not configured (set ABUSECH_AUTH_KEY)");
         const { limit = 25 } = args as { limit?: number };
 
-        const result = await apiRequest<unknown>(
+        const result = await apiRequest<Record<string, unknown> & { data?: unknown[] }>(
           config.abusech.malwarebazaar,
           {
             method: "POST",
@@ -722,12 +732,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               "Content-Type": "application/x-www-form-urlencoded",
               "Auth-Key": config.abusech.authKey!,
             },
-            body: `query=get_recent&selector=${limit}`,
+            body: "query=get_recent&selector=100",
           }
         );
 
+        const requestedLimit = Math.max(0, Math.min(100, Math.trunc(limit)));
+        const limitedResult = Array.isArray(result.data)
+          ? { ...result, data: result.data.slice(0, requestedLimit) }
+          : result;
+
         return {
-          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          content: [{ type: "text", text: JSON.stringify(limitedResult, null, 2) }],
         };
       }
 
@@ -828,7 +843,19 @@ async function main() {
   console.error(`Threat Intel MCP server running - configured: ${configuredServices.join(", ") || "abuse.ch (no auth)"}`);
 }
 
-main().catch((error) => {
-  console.error("Fatal error:", error);
-  process.exit(1);
-});
+function isMainModule(): boolean {
+  if (!process.argv[1]) return false;
+
+  try {
+    return import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
+  } catch {
+    return false;
+  }
+}
+
+if (isMainModule()) {
+  main().catch((error) => {
+    console.error("Fatal error:", error);
+    process.exit(1);
+  });
+}

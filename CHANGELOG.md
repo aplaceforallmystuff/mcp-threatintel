@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security
+- Refreshed dependencies to clear the release security audit; Node.js 20+ is now required by the secure dependency set.
+
+### Fixed
+- Corrected OTX file hash paths, added the configured abuse.ch `Auth-Key` to
+  combined lookups, and made MalwareBazaar recent-sample limits use local
+  slicing with the supported `100` selector.
+- Corrected `threatfox_search` documentation to describe IOC-value matching.
+- Fixed direct CLI startup when the package binary is invoked through a symlink.
+
 ## [1.0.3] - 2026-04-19
 
 ### Fixed
